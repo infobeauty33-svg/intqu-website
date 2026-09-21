@@ -223,32 +223,21 @@ body.canva-home{width:100%;max-width:100%;overflow-x:hidden}
 #hero-title.v3-hero-title{font-size:clamp(36px,4.2vw,68px);line-height:1.1}.iq-hero-motto{font-weight:600;color:#63334e;margin:20px 0}.iq-entry{padding:48px 0}.iq-entry-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}.iq-entry-grid article{background:#fff;border:1px solid #dfcdd7;border-radius:14px;padding:26px;display:flex;flex-direction:column;align-items:flex-start}.iq-entry-grid article>span{font-size:12px;letter-spacing:.08em;color:#63334e;text-transform:uppercase}.iq-entry-grid h3{font-size:24px;margin:16px 0}.iq-entry-grid p{line-height:1.65;margin:0 0 24px}.iq-entry-grid .v2-button{margin-top:auto;font-size:14px;white-space:normal}.iq-entry-note{font-size:14px;line-height:1.6;margin-top:20px;color:#675461}.iq-why-layout{display:block}.iq-why-content{width:100%;max-width:none}.iq-quality-note{border-top:1px solid #dfcdd7;margin-top:24px;padding-top:20px}.iq-more{margin:22px 0;padding:18px 22px;background:#fff;border:1px solid #dfcdd7;border-radius:10px}.iq-more summary{cursor:pointer;font-weight:600;color:#63334e}.iq-more p{line-height:1.7}.iq-join-actions{display:flex;flex-direction:column;align-items:flex-start;gap:14px}.iq-entry a:focus-visible,.iq-more summary:focus-visible{outline:3px solid #63334e;outline-offset:4px}@media(max-width:800px){.iq-entry-grid{grid-template-columns:1fr}.iq-entry{padding:28px 0}.iq-entry-grid article{padding:22px}.iq-entry-grid .v2-button{width:100%}}
 </style><style id="iq-community-revision">
 .v3-about figure{aspect-ratio:auto;max-height:none;overflow:visible}.v3-about figure img{height:auto;max-height:none;object-fit:contain;border-radius:22px}
-.intro{background:rgba(28,16,38,.98);color:#fff;pointer-events:auto;padding:24px;overflow:auto}
-.intro-screen{width:min(1120px,100%);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.75fr);gap:clamp(30px,6vw,86px);align-items:center;margin:auto;padding:clamp(28px,6vw,72px);border:1px solid rgba(235,195,202,.28);background:linear-gradient(135deg,rgba(69,38,65,.88),rgba(28,16,38,.98));box-shadow:0 20px 80px rgba(0,0,0,.28)}
-.intro-kicker{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--soft-rose);margin:0 0 18px}.intro h1{font-size:clamp(3.4rem,8vw,7rem);margin:0;line-height:.95}.intro-subtitle{letter-spacing:.12em;text-transform:uppercase;color:#f3dfe5;font-size:.88rem;margin:20px 0 46px}.intro h2{font-size:clamp(1.7rem,3vw,2.7rem);margin:0 0 16px;color:#fff}.intro-copy>p:not(.intro-kicker):not(.intro-subtitle){max-width:610px;color:#f1e6ed;font-size:clamp(1rem,1.5vw,1.18rem);line-height:1.65}.intro-motto{font-family:var(--font-display);font-size:clamp(1.35rem,2.4vw,2rem)!important;color:var(--soft-rose)!important;margin-top:30px}.intro-photo{margin:0;justify-self:center;width:min(360px,100%)}.intro-photo img{display:block;width:100%;height:auto;max-height:520px;object-fit:contain;border-radius:18px}.intro-photo figcaption{font-size:.78rem;color:#d9cbd5;text-align:center;margin-top:12px}.intro-close{margin-top:32px;border:1px solid rgba(235,195,202,.65);background:transparent;color:#fff;padding:12px 18px;cursor:pointer;font:600 .95rem var(--font-body)}.intro-close:hover{background:rgba(235,195,202,.14)}
+.intro{background:var(--plum);color:#fff;pointer-events:none;padding:0;overflow:hidden}
 .iq-entry{padding:clamp(40px,6vw,76px) max(6vw,22px)}
 .v2-hero-text+.v2-hero-text{margin-top:16px}.v2-hero-text{max-width:620px}
 .v2-phase-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.v2-phase-grid span{font-size:13px;letter-spacing:.05em}
 .v2-header nav{flex-wrap:wrap}#main section{scroll-margin-top:110px}
 @media(max-width:700px){.v2-phase-grid{grid-template-columns:1fr}.v3-about figure{max-width:400px;margin:auto}.v3-about h2,.v3-story h2{font-size:clamp(30px,9vw,46px)}.iq-direct-bar{flex-wrap:wrap}.iq-direct-bar a{white-space:normal}#hero-title.v3-hero-title{font-size:clamp(34px,10vw,48px)}.v2-hero-text{font-size:17px}}
-@media(max-width:700px){.intro{padding:12px}.intro-screen{grid-template-columns:1fr;padding:28px 22px;gap:26px}.intro-copy{order:1}.intro-photo{order:2;width:min(250px,100%)}.intro-subtitle{margin-bottom:30px}.intro h2{font-size:1.75rem}.intro-copy>p:not(.intro-kicker):not(.intro-subtitle){font-size:.98rem}.intro-close{width:100%}}
 </style></head>
 <body class="canva-home">
 <a class="skip-link" href="#main">Zum Inhalt</a>
 
-<div class="intro" id="intro" aria-label="Willkommen bei IntQu.net">
-  <div class="intro-screen">
-    <div class="intro-copy">
-      <p class="intro-kicker">Willkommen bei</p>
-      <h1>IntQu.net</h1>
-      <p class="intro-subtitle">International Quality Network</p>
-      <h2>Was bedeutet IntQu.net?</h2>
-      <p>IntQu.net steht für <strong>International Quality Network</strong> – eine gemeinsame Community für Beauty-Fachleute, Studios, Expert:innen und Hersteller.</p>
-      <p>Hier sollen Wissen, Kontakte, Produkte und neue Möglichkeiten übersichtlich zusammenfinden.</p>
-      <p class="intro-motto">Gemeinsam Qualität sichtbar machen.</p>
-      <button class="intro-close" type="button">Zur Website ↓</button>
-    </div>
-    <figure class="intro-photo"><img alt="Cleopatra Marinescu, Gründerin von IntQu.net"><figcaption>Cleopatra Marinescu · IntQu.net</figcaption></figure>
+<div class="intro" id="intro" aria-label="IntQu.net – International Quality Network">
+  <div class="intro-lockup">
+    <span>IntQu.net</span>
+    <i aria-hidden="true"></i>
+    <small>International Quality Network</small>
   </div>
 </div>
 
@@ -320,11 +309,6 @@ body.canva-home{width:100%;max-width:100%;overflow-x:hidden}
 <script>(() => {
   const intro = document.getElementById('intro');
   if (intro) {
-    const introPhoto = intro.querySelector('.intro-photo img');
-    const profilePhoto = document.querySelector('.v3-about figure img');
-    if (introPhoto && profilePhoto) introPhoto.src = profilePhoto.currentSrc || profilePhoto.src;
-    const closeIntro = intro.querySelector('.intro-close');
-    if (closeIntro) closeIntro.addEventListener('click', () => { intro.classList.add('hide'); window.setTimeout(() => intro.remove(), 450); });
     if (window.location.hash) intro.remove();
     else {
       intro.classList.add('show');
