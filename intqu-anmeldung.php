@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__.'/intqu-language.php';
 // IntQu.net registration MVP. Does not replace index.php.
 ini_set('display_errors', '0');
 header('Content-Type: text/html; charset=UTF-8');
@@ -9,12 +10,20 @@ header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer');
 header("Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 define('SETUP_KEY', (string) (getenv('INTQU_SETUP_KEY') ?: ''));
+if (strlen(SETUP_KEY) < 32) {
+    http_response_code(503);
+    exit('Die Anmeldung wird vorbereitet. Bitte schreibe bei Interesse an info@intqu.net.');
+}
 const NOTICE_VERSION = 'intqu-interest-2026-09-v1';
 const NEWSLETTER_TEXT = 'Ich möchte per E-Mail Neuigkeiten, Veranstaltungen und Weiterbildungsmöglichkeiten von IntQu.net erhalten. Ich kann meine Einwilligung jederzeit widerrufen.';
 $roles = ['Beauty-Fachkraft','Studio / Salon','Trainer:in / Akademie','Expert:in','Marke','Hersteller','Distributor / Großhandel','Dienstleister','Eventveranstalter','Partner / Sponsor'];
 $specialties = ['Kosmetik','Wimpern / Lashes','Nageldesign','Maniküre','Fußpflege / Pediküre','Friseur','Massage','Permanent Make-up','Enthaarung','Wellness','Fitness','Business / Mindset','Recht / Unternehmensberatung','Sonstiges'];
 function e($s): string { return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
 function pageStart(string $title): void {
+    if(defined('INTQU_NEXA_SHOWROOM') && INTQU_NEXA_SHOWROOM){
+        $parts=explode('<!--NEXA_FORM-->',(string)$GLOBALS['nexaShowroomTemplate'],2);
+        echo $parts[0].'<h2>'.e($title).'</h2>';return;
+    }
     echo '<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'.e($title).' – IntQu.net</title><style>
     *{box-sizing:border-box}body{margin:0;background:#f6f0ed;color:#332331;font:17px/1.6 system-ui,sans-serif}header,main,footer{max-width:920px;margin:auto;padding:24px}header{border-bottom:1px solid #d8c9d0}header strong{font-size:27px}header small{display:block}a{color:#66324f}h1{font-size:clamp(29px,5vw,46px);line-height:1.15}h2,legend{font-size:23px;font-weight:650}fieldset,.card{border:1px solid #d8c9d0;border-radius:16px;padding:22px;margin:20px 0;background:#fff}legend{padding:0 8px}label{display:block;margin:15px 0 5px}input:not([type=checkbox]),textarea,select{font:inherit;width:100%;padding:11px;border:1px solid #92838b;border-radius:7px;background:white}input[type=checkbox]{width:20px;height:20px;vertical-align:middle;margin-right:10px}textarea{min-height:105px}.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:4px 16px}.choices label{margin:6px 0}button,.button{display:inline-block;font:inherit;font-weight:650;background:#66324f;color:#fff;border:0;border-radius:8px;padding:13px 22px;cursor:pointer;text-decoration:none}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid #267bb0;outline-offset:3px}.note{color:#67515f;font-size:15px}.error{padding:16px;background:#ffe5e5;border:2px solid #a02d2d;border-radius:8px}.ok{padding:16px;background:#e7f3e9;border:2px solid #357349;border-radius:8px}.gallery img{max-width:180px;max-height:180px;margin:8px;border-radius:8px}nav{display:flex;gap:15px;flex-wrap:wrap}.trap{position:absolute;left:-10000px}dl{overflow-wrap:anywhere}dt{font-weight:bold}dd{margin:0 0 10px;white-space:pre-wrap}summary{cursor:pointer;font-weight:600}footer{font-size:14px}pre{white-space:pre-wrap;font:inherit}
     /* Registration layout: headings stay inside their cards. */
@@ -39,7 +48,12 @@ function pageStart(string $title): void {
     @media(max-width:600px){header,main,footer{padding-left:18px;padding-right:18px}fieldset{padding:20px 16px;margin:18px 0}.section-title{font-size:20px;gap:10px}.choices{grid-template-columns:1fr;gap:8px}form>button[type=submit]{width:100%}h1{font-size:32px}}
 </style></head><body><header><strong>IntQu.net</strong><small>International Quality Network</small></header><main><h1>'.e($title).'</h1>';
 }
-function pageEnd(): void { echo '</main><footer><a href="/">Zur Homepage</a> · <a href="mailto:info@intqu.net">info@intqu.net</a></footer></body></html>'; }
+function pageEnd(): void {
+    if(defined('INTQU_NEXA_SHOWROOM') && INTQU_NEXA_SHOWROOM){
+        $parts=explode('<!--NEXA_FORM-->',(string)$GLOBALS['nexaShowroomTemplate'],2);
+        echo $parts[1]??'';intquFlushLanguage();return;
+    }
+    echo '</main><footer><a href="/">Zur Homepage</a> · <a href="mailto:info@intqu.net">info@intqu.net</a></footer></body></html>'; intquFlushLanguage(); }
 function stopPage(string $message, int $status = 503): void { http_response_code($status); pageStart('Einrichtung noch nicht abgeschlossen'); echo '<p>'.e($message).'</p>'; pageEnd(); exit; }
 function scalarPost(string $key, int $limit = 300): string {
     $v = $_POST[$key] ?? ''; if (!is_string($v) || strlen($v) > $limit) throw new RuntimeException('Bitte prüfe das Feld „'.$key.'“ und seine Länge.');
@@ -54,7 +68,6 @@ function csrfField(): void { echo '<input type="hidden" name="csrf" value="'.e($
 function csrfCheck(): void { if (!hash_equals($_SESSION['csrf'],scalarPost('csrf',100))) throw new RuntimeException('Die Sitzung ist abgelaufen. Bitte lade die Seite neu.'); }
 function setting(PDO $db,string $key,string $fallback=''): string { $q=$db->prepare('SELECT value FROM settings WHERE name=?');$q->execute([$key]);$v=$q->fetchColumn();return $v===false?$fallback:(string)$v; }
 function setSetting(PDO $db,string $key,string $value): void { $q=$db->prepare('INSERT OR REPLACE INTO settings(name,value) VALUES(?,?)');$q->execute([$key,$value]); }
-if (strlen(SETUP_KEY) < 32) stopPage('Die Anmeldung wird vorbereitet. Bei Interesse schreibe bitte an info@intqu.net.');
 $isLocal = in_array($_SERVER['SERVER_NAME'] ?? '', ['localhost','127.0.0.1'],true);
 $https = !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
 if (!$https && !$isLocal) stopPage('Bitte öffne diese Seite mit https://.',400);
@@ -71,7 +84,7 @@ $folderName = '.intqu-private-'.substr(hash('sha256',__FILE__),0,16);
 $store = dirname($root).DIRECTORY_SEPARATOR.$folderName;
 $creating = !is_dir($store);
 if ($creating && (!$setup || ($_SERVER['REQUEST_METHOD']??'GET')!=='POST')) {
-    pageStart('IntQu.net einrichten');echo '<p>Die Anmeldung ist noch geschlossen. Zur Einrichtung wird der auf dem Server hinterlegte Einrichtungsschlüssel benötigt.</p><form method="post" action="?setup=1">';csrfField();echo '<label>Einrichtungsschlüssel<input type="password" name="setup_key" required autocomplete="off"></label><button>Geschützten Speicher prüfen</button></form>';pageEnd();exit;
+    pageStart('IntQu.net einrichten');echo '<p>Die Anmeldung ist noch geschlossen. Zur Einrichtung wird der Schlüssel aus der beiliegenden Anleitung benötigt.</p><form method="post" action="?setup=1">';csrfField();echo '<label>Einrichtungsschlüssel<input type="password" name="setup_key" required autocomplete="off"></label><button>Geschützten Speicher prüfen</button></form>';pageEnd();exit;
 }
 if ($creating) {
     try { csrfCheck(); if (!hash_equals(SETUP_KEY,scalarPost('setup_key',100))) throw new RuntimeException('Der Einrichtungsschlüssel stimmt nicht.'); }
@@ -133,9 +146,9 @@ $nexaInterest=(!$eventInterest && ($_GET['interest']??'')==='nexa-uv');
 $join=($_GET['join']??'')==='partner'?'partner':'mitglied';
 $shortInterest=$nexaInterest||$eventInterest;
 $shortName=$eventInterest?'Beauty Revolution Austria':'NEXA UV';
-$shortBack=$eventInterest?'./#events':'showroom/nexa-uv-system/';
+$shortBack=defined('INTQU_NEXA_SHOWROOM')?'#top':($eventInterest?'./#events':'showroom/nexa-uv-system/');
 $showroomOptions=$eventInterest?['Interesse an der Meisterschaft','Bitte Informationen und Kriterien zuschicken']:['Vorführung','Schulung','Produktinformationen'];
-if(isset($_GET['success']) && (int)($_SESSION['receipt_until']??0)>=time()){if(!empty($_SESSION['receipt_nexa'])||!empty($_SESSION['receipt_event'])){pageStart(!empty($_SESSION['receipt_event'])?'Danke für dein Interesse an Beauty Revolution Austria':'Danke für dein Interesse an NEXA UV');echo '<p class="ok">Deine Anfrage wurde gespeichert.</p><p>Wir melden uns persönlich per E-Mail bei dir. Deine Anfrage ist unverbindlich.</p><p><a href="'.(!empty($_SESSION['receipt_event'])?'./#events':'showroom/nexa-uv-system/').'">Zurück zur Übersicht</a></p>';pageEnd();exit;}pageStart(!empty($_SESSION['receipt_event'])?'Dein Eventinteresse ist gespeichert':(!empty($_SESSION['receipt_nexa'])?'Deine NEXA-Anfrage ist gespeichert':'Deine Anfrage ist gespeichert'));echo '<p class="ok">Danke! Deine Angaben und die hochgeladenen Fotos wurden gespeichert.</p><p>'.e(setting($db,'notice')).'</p><p>Es wurde kein öffentliches Profil und kein persönliches Benutzerkonto angelegt. Falls du den Newsletter gewählt hast, ist dein Wunsch vorgemerkt. Eine Bestätigung folgt gesondert.</p>';pageEnd();exit;}
+if(isset($_GET['success']) && (int)($_SESSION['receipt_until']??0)>=time()){if(!empty($_SESSION['receipt_nexa'])||!empty($_SESSION['receipt_event'])){pageStart(!empty($_SESSION['receipt_event'])?'Danke für dein Interesse an Beauty Revolution Austria':'Danke für dein Interesse an NEXA UV');echo '<p class="ok">Deine Anfrage wurde gespeichert.</p><p>Wir melden uns persönlich per E-Mail bei dir. Deine Anfrage ist unverbindlich.</p><p><a href="'.(defined('INTQU_NEXA_SHOWROOM')?'#top':(!empty($_SESSION['receipt_event'])?'./#events':'showroom/nexa-uv-system/')).'">Zurück zur Übersicht</a></p>';pageEnd();exit;}pageStart(!empty($_SESSION['receipt_event'])?'Dein Eventinteresse ist gespeichert':(!empty($_SESSION['receipt_nexa'])?'Deine NEXA-Anfrage ist gespeichert':'Deine Anfrage ist gespeichert'));echo '<p class="ok">Danke! Deine Angaben und die hochgeladenen Fotos wurden gespeichert.</p><p>'.e(setting($db,'notice')).'</p><p>Es wurde kein öffentliches Profil und kein persönliches Benutzerkonto angelegt. Falls du den Newsletter gewählt hast, ist dein Wunsch vorgemerkt. Eine Bestätigung folgt gesondert.</p>';pageEnd();exit;}
 if(setting($db,'active')!=='1'&&!$preview){pageStart('Die Anmeldung wird vorbereitet');echo '<p>Das Profilformular ist noch nicht geöffnet. Bei Interesse schreibe bitte an <a href="mailto:info@intqu.net">info@intqu.net</a>.</p>';pageEnd();exit;}
 
 if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
@@ -147,7 +160,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             if($p['name']===''||!filter_var($p['email'],FILTER_VALIDATE_EMAIL)||$p['interesse']===[])throw new RuntimeException('Bitte deinen Namen, eine gültige E-Mail-Adresse und mindestens ein Interesse angeben.');
         }else{
         $p=[];foreach(['name'=>120,'email'=>254,'company'=>160,'country'=>100,'city'=>100,'language'=>100,'phone'=>60,'links'=>800,'experience'=>500,'qualifications'=>2000,'description'=>3000,'goals'=>3000] as $k=>$n)$p[$k]=scalarPost($k,$n);
-        $p['anlass']=$eventInterest?'Beauty Revolution Austria – unverbindliches Interesse':($nexaInterest?'NEXA UV – Vorführung / Informationen':($join==='partner'?'IntQu.net – Partneranfrage':'IntQu.net – Mitgliedsanfrage'));
+        $p['formularsprache']=intquIsRo()?'ro':'de';$p['anlass']=$eventInterest?'Beauty Revolution Austria – unverbindliches Interesse':($nexaInterest?'NEXA UV – Vorführung / Informationen':($join==='partner'?'IntQu.net – Partneranfrage':'IntQu.net – Mitgliedsanfrage'));
         $p['roles']=picked('roles',$roles);$p['specialties']=picked('specialties',$specialties);
         if($p['name']===''||!filter_var($p['email'],FILTER_VALIDATE_EMAIL)||$p['country']===''||$p['roles']===[]||$p['specialties']===[]||$p['goals']==='')throw new RuntimeException('Bitte Name, gültige E-Mail, Land, Rolle, Fachbereich und Ziele ausfüllen.');
         }
@@ -157,7 +170,7 @@ if(($_SERVER['REQUEST_METHOD']??'GET')==='POST'){
             if($count&&(!extension_loaded('gd')||!extension_loaded('fileinfo')))throw new RuntimeException('Fotoverarbeitung ist derzeit nicht verfügbar. Bitte ohne Fotos senden.');
             foreach($uploads['error'] as $i=>$err){if($err===UPLOAD_ERR_NO_FILE)continue;if($err!==UPLOAD_ERR_OK)throw new RuntimeException('Ein Foto konnte nicht hochgeladen werden. Bitte erneut auswählen.');$tmp=$uploads['tmp_name'][$i];if(!is_uploaded_file($tmp)||$uploads['size'][$i]>5*1024*1024)throw new RuntimeException('Jedes Foto darf höchstens 5 MB groß sein.');$mime=(new finfo(FILEINFO_MIME_TYPE))->file($tmp);if(!in_array($mime,['image/jpeg','image/png','image/webp'],true))throw new RuntimeException('Bitte JPG, PNG oder WebP verwenden.');$size=@getimagesize($tmp);if(!$size||$size[0]*$size[1]>16000000)throw new RuntimeException('Das Foto ist zu groß. Bitte auf maximal 16 Megapixel verkleinern.');$img=@imagecreatefromstring(file_get_contents($tmp));if(!$img)throw new RuntimeException('Das Foto konnte nicht gelesen werden.');$scale=min(1,1800/max($size[0],$size[1]));$w=max(1,(int)($size[0]*$scale));$h=max(1,(int)($size[1]*$scale));$dest=imagecreatetruecolor($w,$h);imagefill($dest,0,0,imagecolorallocate($dest,255,255,255));imagecopyresampled($dest,$img,0,0,0,0,$w,$h,$size[0],$size[1]);$file=bin2hex(random_bytes(24)).'.jpg';$savedFiles[]=$file;$ok=imagejpeg($dest,$resolved.'/'.$file,85);imagedestroy($img);imagedestroy($dest);if(!$ok)throw new RuntimeException('Das Foto konnte nicht gespeichert werden.');}
         }
-        $db->beginTransaction();$now=gmdate('c');$news=!$shortInterest && isset($_POST['newsletter']);$q=$db->prepare('INSERT INTO applications(created,payload,newsletter,consent_at,consent_text,privacy_text) VALUES(?,?,?,?,?,?)');$q->execute([$now,json_encode($p,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),$news?'angefragt – unbestätigt':'nein',$news?$now:null,$news?NEWSLETTER_TEXT:null,NOTICE_VERSION."\n".setting($db,'privacy')]);$id=(int)$db->lastInsertId();$q=$db->prepare('INSERT INTO photos(application_id,filename) VALUES(?,?)');foreach($savedFiles as $file)$q->execute([$id,$file]);$db->commit();$_SESSION['receipt_until']=time()+900;$_SESSION['receipt_event']=$eventInterest;$_SESSION['receipt_nexa']=$nexaInterest;$_SESSION['csrf']=bin2hex(random_bytes(24));header('Location: ?success=1');exit;
+        $db->beginTransaction();$now=gmdate('c');$news=!$shortInterest && isset($_POST['newsletter']);$q=$db->prepare('INSERT INTO applications(created,payload,newsletter,consent_at,consent_text,privacy_text) VALUES(?,?,?,?,?,?)');$q->execute([$now,json_encode($p,JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR),$news?'angefragt – unbestätigt':'nein',$news?$now:null,$news?(intquIsRo()?html_entity_decode(intquTranslateText(NEWSLETTER_TEXT),ENT_QUOTES|ENT_HTML5,'UTF-8'):NEWSLETTER_TEXT):null,NOTICE_VERSION."\n".setting($db,'privacy')]);$id=(int)$db->lastInsertId();$q=$db->prepare('INSERT INTO photos(application_id,filename) VALUES(?,?)');foreach($savedFiles as $file)$q->execute([$id,$file]);$db->commit();$_SESSION['receipt_until']=time()+900;$_SESSION['receipt_event']=$eventInterest;$_SESSION['receipt_nexa']=$nexaInterest;$_SESSION['csrf']=bin2hex(random_bytes(24));header('Location: ?success=1'.(intquIsRo()?'&lang=ro':'').(defined('INTQU_NEXA_SHOWROOM')?'#anfragen':''));exit;
     }catch(Throwable $ex){if($db->inTransaction())$db->rollBack();foreach($savedFiles as $file)@unlink($resolved.'/'.$file);$error=$ex instanceof RuntimeException&&!($ex instanceof PDOException)?$ex->getMessage():'Die Anfrage konnte nicht gespeichert werden. Bitte versuche es erneut.';}
 }
 $_SESSION['form_started']=$_SESSION['form_started']??time();
@@ -169,7 +182,7 @@ if($shortInterest){
     else echo '<p class="intro-copy">Du möchtest NEXA UV näher kennenlernen? Sag uns, was dich interessiert. Wir melden uns persönlich per E-Mail bei dir.</p>';
     if($preview)echo '<p class="ok">Interne Vorschau. Testanfragen werden gespeichert.</p>';
     if($error)echo '<p class="error" role="alert">'.e($error).'</p>';
-    echo '<form method="post" action="?'.($eventInterest?'event=beauty-revolution-austria':'interest=nexa-uv').($preview?'&amp;preview=1':'').'"><fieldset aria-labelledby="showroom-title"><h2 class="section-title" id="showroom-title">Deine Anfrage</h2>';
+    echo '<form method="post" action="?'.($eventInterest?'event=beauty-revolution-austria':'interest=nexa-uv').($preview?'&amp;preview=1':'').(defined('INTQU_NEXA_SHOWROOM')?'#anfragen':'').'"><fieldset aria-labelledby="showroom-title"><h2 class="section-title" id="showroom-title">Deine Anfrage</h2>';
     csrfField();
     field('name','Dein Name','text',true,120);
     field('email','Deine E-Mail-Adresse','email',true,254);
