@@ -10,7 +10,9 @@ header('X-Content-Type-Options: nosniff');
 header('Referrer-Policy: no-referrer');
 header("Content-Security-Policy: default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'");
 define('SETUP_KEY', (string) (getenv('INTQU_SETUP_KEY') ?: ''));
-if (strlen(SETUP_KEY) < 32) {
+$intquDirectRequest = basename((string)($_SERVER['SCRIPT_FILENAME'] ?? '')) === 'intqu-anmeldung.php'
+    || basename((string)($_SERVER['SCRIPT_NAME'] ?? '')) === 'intqu-anmeldung.php';
+if ($intquDirectRequest && strlen(SETUP_KEY) < 32) {
     http_response_code(503);
     exit('Die Anmeldung wird vorbereitet. Bitte schreibe bei Interesse an info@intqu.net.');
 }
